@@ -1,0 +1,6 @@
+﻿  Source.cpp
+C:\Users\Bob-pc\Desktop\POO-Seminarii\ProiectPoo\ProiectPOO\BazaDeDate.h(59,28): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Bob-pc\Desktop\POO-Seminarii\ProiectPoo\ProiectPOO\BazaDeDate.h(119,37): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Bob-pc\Desktop\POO-Seminarii\ProiectPoo\ProiectPOO\BazaDeDate.h(315,38): warning C4018: '<': signed/unsigned mismatch
+C:\Users\Bob-pc\Desktop\POO-Seminarii\ProiectPoo\ProiectPOO\BazaDeDate.h(403,27): warning C4018: '<': signed/unsigned mismatch
+  ProiectPOO.vcxproj -> C:\Users\Bob-pc\Desktop\POO-Seminarii\ProiectPoo\ProiectPOO\Debug\ProiectPOO.exe
