@@ -26,5 +26,8 @@
     <ClInclude Include="BazaDeDate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CREATEandINSERT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

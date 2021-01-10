@@ -1,0 +1,2 @@
+INSERT INTO Persoane VALUES(2, Mihai, Marin)
+INSERT INTO Angajati VALUES(2, Ion, Marin)

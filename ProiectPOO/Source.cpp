@@ -5,6 +5,7 @@
 #include<vector>
 #include<set>
 #include "BazaDeDate.h"
+#include "CREATEandINSERT.h"
 using namespace std;
 
 
@@ -13,8 +14,9 @@ int menu();
 int main()
 {
 	BazaDeDate bd;
+	bd.preluare();
 	int op = 0;
-	while (op != 8)
+	while (op != 10)
 	{
 		op = menu();
 		switch (op)
@@ -57,6 +59,7 @@ int main()
 				cin.ignore();
 			}
 			getline(cin, comanda);
+
 			bd.setComanda(comanda);
 			bd.AfisareTabelV2();
 			break;
@@ -120,6 +123,34 @@ int main()
 		}
 		case 8:
 		{
+			system("cls");
+			string comanda;
+			cout << "Introduceti comanda de update: ";
+			if (cin.peek() == '\n')
+			{
+				cin.ignore();
+			}
+			getline(cin, comanda);
+			bd.setComanda(comanda);
+			bd.exportTabelCSV();
+			break;
+		}
+		case 9:
+		{
+			system("cls");
+			string comanda;
+			cout << "Introduceti comanda de update: ";
+			if (cin.peek() == '\n')
+			{
+				cin.ignore();
+			}
+			getline(cin, comanda);
+			bd.setComanda(comanda);
+			bd.importTabel();
+			break;
+		}
+		case 10:
+		{
 			break;
 		}
 		default:
@@ -130,8 +161,8 @@ int main()
 		}
 		}
 	}
-	
-	
+
+
 }
 
 int menu()
@@ -145,7 +176,9 @@ int menu()
 	cout << "5.Selectare in Tabel" << endl;
 	cout << "6.Stergere linie din Tabela" << endl;
 	cout << "7.Update valoare Tabel" << endl;
-	cout << "8.Quit" << endl;
+	cout << "8.Exporta Tabelul in CSV" << endl;
+	cout << "9.Preluare date CSV" << endl;
+	cout << "10.Quit" << endl;
 	cin >> optiune;
 	return optiune;
 }

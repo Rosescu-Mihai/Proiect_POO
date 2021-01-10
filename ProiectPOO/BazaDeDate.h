@@ -5,6 +5,9 @@
 #include<map>
 #include<vector>
 #include<set>
+#include "CREATEandINSERT.h"
+#include <fstream>
+#include <sstream>
 using namespace std;
 class BazaDeDate
 {
@@ -14,6 +17,9 @@ class BazaDeDate
 	vector<string> valori_coloane;
 	set<vector<string>> linii_tabel;
 	map<string, set<vector<string>>> Tabele;
+	PreluaredateTXT n;
+	int nrFisiserAfisare = 1;
+	int nrFisierSelect = 1;
 
 public:
 
@@ -167,13 +173,19 @@ public:
 	void AfisareTabel(set<vector<string>> sv)
 	{
 		vector<string> v = *sv.rbegin();
+		string linie_nume_coloana;
+		string linie_val_imp;
 
+		ofstream file_Afisare;
+		file_Afisare.open("DISPLAY_TABLE_" + std::to_string(nrFisiserAfisare) + ".txt");
 		for (std::vector<string>::iterator it = v.begin(); it != v.end(); ++it)
 		{
 			int pozitie_nume_coloana = it->find(',', 0);
 			string nume_coloana = it->substr(0, pozitie_nume_coloana);
 			cout << nume_coloana << " || ";
+			linie_nume_coloana.append(nume_coloana + " || ");
 		}
+		file_Afisare << linie_nume_coloana << endl;
 		cout << endl;
 
 		for (std::vector<string>::iterator it = v.begin(); it != v.end(); ++it)
@@ -191,19 +203,25 @@ public:
 
 			string valoare_implicita = it->substr(pozitie_valoare_implicita + 1, it->size());
 			cout << valoare_implicita << " || ";
+			linie_val_imp.append(valoare_implicita + " || ");
 		}
+		file_Afisare << linie_val_imp << endl;
 		cout << endl;
 
 		for (std::set<vector<string>>::iterator it = sv.begin(); it != std::prev(sv.end()); ++it)
 		{
+			string linie_valoare = " ";
 			vector<string> aux = *it;
 			for (std::vector<string>::iterator jt = aux.begin(); jt != aux.end(); ++jt)
 			{
 				cout << *jt << " || ";
+				linie_valoare.append(*jt + " || ");
 			}
+			file_Afisare << linie_valoare << endl;
 			cout << endl;
 		}
-
+		file_Afisare.close();
+		nrFisiserAfisare++;
 	}
 
 	void AfisareTabelV2()
@@ -311,6 +329,11 @@ public:
 					vector<string> coloane_selectate;
 					int inceput_denumire_coloana = 0;
 					int final_denumire_coloana = 0;
+					string linie_nume_coloana;
+					string linie_val_imp;
+
+					ofstream file_SELECT;
+					file_SELECT.open("SELECT_" + std::to_string(nrFisierSelect) + ".txt");
 
 					while (inceput_denumire_coloana < cerere.size() - 1)
 					{
@@ -357,9 +380,11 @@ public:
 										cout << nume_coloana << "||";
 										int index1 = jt - coloane_tabel.begin();
 										poziti_coloane_selectate.push_back(index1);
+										linie_nume_coloana.append(nume_coloana + " || ");
 									}
 								}
 							}
+							file_SELECT << linie_nume_coloana << endl;
 							cout << endl;
 							for (std::vector<string>::iterator yt = coloane_selectate.begin(); yt != coloane_selectate.end(); ++yt)
 							{
@@ -391,15 +416,18 @@ public:
 
 										string valoare_implicita = jt->substr(pozitie_valoare_implicita + 1, jt->size());
 										cout << valoare_implicita << " || ";
+										linie_val_imp.append(valoare_implicita + " || ");
 
 									}
 								}
 							}
+							file_SELECT << linie_val_imp << endl;
 							cout << endl;
 
 							for (std::set<vector<string>>::reverse_iterator kt = std::next(it->second.rbegin(), 1); kt != it->second.rend(); ++kt)
 							{
 								vector<string> aux_valori = *kt;
+								string linie_valoare = " ";
 								for (int i = 0; i < poziti_coloane_selectate.size(); ++i)
 								{
 									for (std::vector<string>::iterator mt = aux_valori.begin(); mt != aux_valori.end(); ++mt)
@@ -408,10 +436,12 @@ public:
 										if (poziti_coloane_selectate[i] == compara)
 										{
 											cout << *mt << " || ";
+											linie_valoare.append(*mt + " || ");
 										}
 
 									}
 								}
+								file_SELECT << linie_valoare << endl;
 								cout << endl;
 							}
 						}
@@ -421,7 +451,8 @@ public:
 						}
 					}
 
-
+					file_SELECT.close();
+					nrFisierSelect++;
 				}
 			}
 			else
@@ -770,6 +801,254 @@ public:
 					}
 				}
 			}
+		}
+	}
+
+	void preluare()
+	{
+		n.setNumeFisier("CREATE");
+		ifstream file_CREATE(n.getNumeFisier() + ".txt");
+		if (file_CREATE.is_open())
+		{
+			while (getline(file_CREATE, comanda))
+			{
+				CreareTabel();
+			}
+			file_CREATE.close();
+		}
+		else
+		{
+			cout << "Fisierul nu exista!" << endl;
+		}
+
+		n.setNumeFisier("INSERT");
+		ifstream file_INSERT(n.getNumeFisier() + ".txt");
+		if (file_INSERT.is_open())
+		{
+			while (getline(file_INSERT, comanda))
+			{
+				InserareTabel();
+			}
+			file_INSERT.close();
+		}
+		else
+		{
+			cout << "Fisierul nu exista!" << endl;
+		}
+	}
+
+	void exportTabelCSV()
+	{
+		string verificare = comanda.substr(0, 6);
+		if (verificare == "EXPORT")
+		{
+			int poz1 = comanda.find(' ', 0);
+			int poz2 = comanda.find(' ', poz1 + 1);
+
+			string nume_tabel = comanda.substr(poz1 + 1, poz2 - poz1 - 1);
+			int ok = 0;
+			for (std::map<string, set<vector<string>>>::iterator it = Tabele.begin(); it != Tabele.end(); ++it)
+			{
+				if (nume_tabel == it->first)
+				{
+					ok = 1;
+					poz1 = poz2;
+					poz2 = comanda.length();
+					string nume_fisier = comanda.substr(poz1 + 1, poz2 - poz1);
+					if (nume_fisier.length() > 0)
+					{
+						ofstream file_CSV;
+						file_CSV.open(nume_fisier);
+						for (std::set<vector<string>>::reverse_iterator r_it = it->second.rbegin(); r_it != it->second.rend(); ++r_it)
+						{
+							vector<string> aux = *r_it;
+							for (std::vector<string>::iterator vt = aux.begin(); vt != aux.end(); ++vt)
+							{
+								file_CSV << *vt << ",";
+							}
+							file_CSV << endl;
+						}
+						file_CSV.close();
+						cout << "Fiser creat cu succes!" << endl;
+					}
+					else
+					{
+						cout << "Fisierul nu este specificat!" << endl;
+					}
+					break;
+				}
+			}
+			if (ok == 0)
+			{
+				cout << "Tabelul nu exista" << endl;
+			}
+		}
+		else
+		{
+			cout << "Comanda este incorecta!" << endl;
+		}
+	}
+
+	inline bool isInteger(const std::string& s)
+	{
+		if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
+
+		char* p;
+		strtol(s.c_str(), &p, 10);
+
+		return (*p == 0);
+	}
+
+	bool isFloat(string myString) {
+		std::istringstream iss(myString);
+		float f;
+		iss >> noskipws >> f;
+		return iss.eof() && !iss.fail();
+	}
+
+	void importTabel()
+	{
+		string verificare = comanda.substr(0, 6);
+		if (verificare == "IMPORT")
+		{
+			int poz1 = comanda.find(' ', 0);
+			int poz2 = comanda.find(' ', poz1 + 1);
+
+			string nume_tabel = comanda.substr(poz1 + 1, poz2 - poz1 - 1);
+			int ok = 0;
+			for (std::map<string, set<vector<string>>>::iterator it = Tabele.begin(); it != Tabele.end(); ++it)
+			{
+				if (nume_tabel == it->first)
+				{
+					ok = 1;
+					poz1 = poz2;
+					poz2 = comanda.length();
+					string nume_fisier = comanda.substr(poz1 + 1, poz2 - poz1);
+					if (nume_fisier.length() > 0)
+					{
+						ifstream file_CSV;
+						file_CSV.open(nume_fisier);
+						if (file_CSV.is_open())
+						{
+							vector<string>inf_coloane = *it->second.rbegin();
+							vector<string> tipuri;
+							for (std::vector<string>::iterator xt = inf_coloane.begin(); xt != inf_coloane.end(); ++xt)
+							{
+								int pozTip1 = xt->find(',', 0);
+								int pozTip2 = xt->find(',', pozTip1 + 1);
+								string tipdata = xt->substr(pozTip1 + 2, pozTip2 - pozTip1 - 2);
+								tipuri.push_back(tipdata);
+							}
+							int nr = 0;
+							vector<string> date;
+							while (file_CSV.good())
+							{
+								string element;
+								getline(file_CSV, element, '\n');
+
+								if (element.size() > 0)
+								{
+									int inceput_valoare_coloana = 0;
+									int final_valoare_coloana = 0;
+
+									while (inceput_valoare_coloana < element.size() - 2)
+									{
+										int pozindex = 0;
+										for (std::string::size_type index = inceput_valoare_coloana; index < element.size(); ++index)
+										{
+											pozindex = index;
+											if (element[index] == ',')
+											{
+												final_valoare_coloana = index;
+												break;
+											}
+										}
+
+										if (pozindex == element.size() - 1)
+										{
+											string valoare_coloana = element.substr(inceput_valoare_coloana, final_valoare_coloana - inceput_valoare_coloana);
+											date.push_back(valoare_coloana);
+											break;
+										}
+										else
+										{
+											string valoare_coloana = element.substr(inceput_valoare_coloana, final_valoare_coloana - inceput_valoare_coloana);
+											date.push_back(valoare_coloana);
+
+											inceput_valoare_coloana = final_valoare_coloana + 1;
+										}
+									}
+									if (date.size() == tipuri.size())
+									{
+										int index = 0;
+										while (index < date.size())
+										{
+											if (tipuri[index] == "integer")
+											{
+												if (!(isInteger(date[index])))
+												{
+													break;
+												}
+											}
+											else
+											{
+												if (tipuri[index] == "float")
+												{
+													if (!(isFloat(date[index])))
+													{
+														break;
+													}
+												}
+												else
+												{
+													if (tipuri[index] == "text")
+													{
+														if (isInteger(date[index]) || isFloat(date[index]))
+														{
+															break;
+														}
+													}
+												}
+											}
+											++index;
+										}
+										if (index < date.size() - 1)
+										{
+											cout << "Nu se respecta structura tabelului" << endl;
+											break;
+										}
+										else
+										{
+											it->second.insert(date);
+											date.clear();
+										}
+									}
+									else
+									{
+										break;
+									}
+								}
+
+							}
+							file_CSV.close();
+
+						}
+					}
+					else
+					{
+						cout << "Fisierul nu este specificat!" << endl;
+					}
+					break;
+				}
+			}
+			if (ok == 0)
+			{
+				cout << "Tabelul nu exista" << endl;
+			}
+		}
+		else
+		{
+			cout << "Comanda este incorecta!" << endl;
 		}
 	}
 };

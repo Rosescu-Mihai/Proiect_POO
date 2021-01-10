@@ -1,0 +1,2 @@
+CREATE TABLE Angajati((id, integer, 6, 1), (nume, text, 255, Mihai), (prenume, text, 255, Florin))
+CREATE TABLE Persoane((id, integer, 6, 1), (nume, text, 255, Mihai), (prenume, text, 255, Florin))
