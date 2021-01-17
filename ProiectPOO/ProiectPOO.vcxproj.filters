@@ -29,5 +29,11 @@
     <ClInclude Include="CREATEandINSERT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VerificareDate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriereBinara.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

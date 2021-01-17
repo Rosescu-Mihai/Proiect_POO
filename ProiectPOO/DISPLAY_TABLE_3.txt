@@ -1,0 +1,3 @@
+id || nume || prenume || 
+ 1 ||  Mihai ||  Florin || 
+ 2 || Ion || Marin || 

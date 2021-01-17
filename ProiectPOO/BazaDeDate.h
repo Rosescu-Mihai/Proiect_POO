@@ -8,6 +8,8 @@
 #include "CREATEandINSERT.h"
 #include <fstream>
 #include <sstream>
+#include "VerificareDate.h"
+#include "ScriereBinara.h"
 using namespace std;
 class BazaDeDate
 {
@@ -20,6 +22,7 @@ class BazaDeDate
 	PreluaredateTXT n;
 	int nrFisiserAfisare = 1;
 	int nrFisierSelect = 1;
+	VerificareDate vfCreare;
 
 public:
 
@@ -73,16 +76,102 @@ public:
 						}
 					}
 					string coloana = comanda.substr(inceput_coloana + 1, final_coloana - 1 - inceput_coloana);
-					coloane_tabel.push_back(coloana);
+					int nr = 0;
+					for (std::string::size_type i = coloana.size(); i >= 1; --i)
+					{
+						if (coloana[i] == ',')
+						{
+							nr++;
+						}
+					}
+					if (nr != 3)
+					{
+						cout << "Coloana nu respecta nr de atribute" << endl;
+						break;
+					}
+					else
+					{
+						int pozitie_valoare_implicita = 0;
+						for (std::string::size_type i = coloana.size(); i >= 1; --i)
+						{
+							if (coloana[i] == ' ')
+							{
+								pozitie_valoare_implicita = i;
+								break;
+							}
+						}
 
-					inceput_coloana = final_coloana + 3;
+						if (coloana[pozitie_valoare_implicita - 1] != ',')
+						{
+							cout << "Coloana nu respecta structura!" << endl;
+							break;
+						}
+						else
+						{
+							coloane_tabel.push_back(coloana);
+							inceput_coloana = final_coloana + 3;
+						}
+					}
 				}
-				linii_tabel.insert(coloane_tabel);
-				coloane_tabel.clear();
-				Tabele.insert(std::pair< string, set<vector<string>>>(nume_tabel, linii_tabel));
-				valori_coloane.clear();
-				linii_tabel.clear();
-				cout << "Creare cu succes a tabelului!" << endl;
+
+				if (inceput_coloana < comanda.size() - 2)
+				{
+					cout << "Coloana incorect initializata" << endl;
+				}
+				else
+				{
+					vector<string> tipuri;
+					vector<string> valori_implicite;
+					for (std::vector<string>::iterator x = coloane_tabel.begin(); x != coloane_tabel.end(); ++x)
+					{
+						int pozTip1 = x->find(',', 0);
+						int pozTip2 = x->find(',', pozTip1 + 1);
+						string tipdata = x->substr(pozTip1 + 2, pozTip2 - pozTip1 - 2);
+						if (tipdata == "integer" || tipdata == "float" || tipdata == "text")
+						{
+							tipuri.push_back(tipdata);
+						}
+						else
+						{
+							cout << "Tipurile de coloana sunt stabilite corect!" << endl;
+							break;
+						}
+
+						string valoare = *x;
+						int pozitie_valoare_implicita = 0;
+						for (std::string::size_type i = valoare.size(); i >= 1; --i)
+						{
+							if (valoare[i] == ',')
+							{
+								pozitie_valoare_implicita = i;
+								break;
+							}
+						}
+						string valoare_implicita = x->substr(pozitie_valoare_implicita + 2, x->size());
+						valori_implicite.push_back(valoare_implicita);
+
+
+					}
+					vfCreare.setTipuri(tipuri);
+					vfCreare.setDate(valori_implicite);
+					if (vfCreare.verificareLaCreare())
+					{
+						linii_tabel.insert(coloane_tabel);
+						coloane_tabel.clear();
+						Tabele.insert(std::pair< string, set<vector<string>>>(nume_tabel, linii_tabel));
+						valori_coloane.clear();
+						linii_tabel.clear();
+						cout << "Creare cu succes a tabelului!" << endl;
+					}
+					else
+					{
+						coloane_tabel.clear();
+						linii_tabel.clear();
+						valori_coloane.clear();
+						cout << "Tabelul nu a putut fi creat!" << endl;
+					}
+				}
+
 			}
 			else
 			{
@@ -106,11 +195,12 @@ public:
 
 			string nume_tabel = comanda.substr(poz1, poz2 - poz1);
 			int ok = 0;
-
+			set<vector<string>> comp1;
 			for (map<string, set<vector<string>>>::iterator it = Tabele.begin(); it != Tabele.end(); ++it)
 			{
 				if (it->first == nume_tabel)
 				{
+					comp1 = it->second;
 					ok = 1;
 				}
 			}
@@ -140,18 +230,38 @@ public:
 					}
 
 
-
+					set<vector<string>> comp2;
 					for (map<string, set<vector<string>>>::iterator it = Tabele.begin(); it != Tabele.end(); ++it)
 					{
 						if (it->first == nume_tabel)
 						{
-							it->second.insert(valori_coloane);
+							vector<string>inf_coloane = *it->second.rbegin();
+							vector<string> tipuri;
+							for (std::vector<string>::iterator xt = inf_coloane.begin(); xt != inf_coloane.end(); ++xt)
+							{
+								int pozTip1 = xt->find(',', 0);
+								int pozTip2 = xt->find(',', pozTip1 + 1);
+								string tipdata = xt->substr(pozTip1 + 2, pozTip2 - pozTip1 - 2);
+								tipuri.push_back(tipdata);
+							}
+							VerificareDate vf1(tipuri, valori_coloane, it->second);
+							it->second = vf1.verificare();
+							comp2 = it->second;
 							valori_coloane.clear();
+							ScriereFisier scb(it->second, it->first);
+							scb.serializare();
 							break;
 						}
 					}
+					if (comp1 == comp2)
+					{
+						cout << "valorile nu au fost inserate!" << endl;
+					}
+					else
+					{
+						cout << "Valori inserate cu succes!" << endl;
+					}
 
-					cout << "Valori inserate cu succes!" << endl;
 				}
 				else
 				{
@@ -443,7 +553,9 @@ public:
 								}
 								file_SELECT << linie_valoare << endl;
 								cout << endl;
+								
 							}
+							break;
 						}
 						else
 						{
@@ -859,7 +971,7 @@ public:
 					{
 						ofstream file_CSV;
 						file_CSV.open(nume_fisier);
-						for (std::set<vector<string>>::reverse_iterator r_it = it->second.rbegin(); r_it != it->second.rend(); ++r_it)
+						for (std::set<vector<string>>::reverse_iterator r_it = std::next(it->second.rbegin()); r_it != it->second.rend(); ++r_it)
 						{
 							vector<string> aux = *r_it;
 							for (std::vector<string>::iterator vt = aux.begin(); vt != aux.end(); ++vt)
@@ -889,22 +1001,6 @@ public:
 		}
 	}
 
-	inline bool isInteger(const std::string& s)
-	{
-		if (s.empty() || ((!isdigit(s[0])) && (s[0] != '-') && (s[0] != '+'))) return false;
-
-		char* p;
-		strtol(s.c_str(), &p, 10);
-
-		return (*p == 0);
-	}
-
-	bool isFloat(string myString) {
-		std::istringstream iss(myString);
-		float f;
-		iss >> noskipws >> f;
-		return iss.eof() && !iss.fail();
-	}
 
 	void importTabel()
 	{
@@ -926,113 +1022,86 @@ public:
 					string nume_fisier = comanda.substr(poz1 + 1, poz2 - poz1);
 					if (nume_fisier.length() > 0)
 					{
-						ifstream file_CSV;
-						file_CSV.open(nume_fisier);
-						if (file_CSV.is_open())
+						if (nume_fisier == nume_tabel + ".bin")
 						{
-							vector<string>inf_coloane = *it->second.rbegin();
-							vector<string> tipuri;
-							for (std::vector<string>::iterator xt = inf_coloane.begin(); xt != inf_coloane.end(); ++xt)
+							set<vector<string>> set_aux;
+							ScriereFisier scfb(it->second, it->first);
+							set_aux = scfb.deserializare();
+							for (std::set<vector<string>>::const_iterator xit = set_aux.begin(); xit != set_aux.end(); ++xit)
 							{
-								int pozTip1 = xt->find(',', 0);
-								int pozTip2 = xt->find(',', pozTip1 + 1);
-								string tipdata = xt->substr(pozTip1 + 2, pozTip2 - pozTip1 - 2);
-								tipuri.push_back(tipdata);
+								vector<string> vec_aux = *xit;
+								it->second.insert(vec_aux);
 							}
-							int nr = 0;
-							vector<string> date;
-							while (file_CSV.good())
+						}
+						else
+						{
+							ifstream file_CSV;
+							file_CSV.open(nume_fisier);
+							if (file_CSV.is_open())
 							{
-								string element;
-								getline(file_CSV, element, '\n');
-
-								if (element.size() > 0)
+								vector<string>inf_coloane = *it->second.rbegin();
+								vector<string> tipuri;
+								for (std::vector<string>::iterator xt = inf_coloane.begin(); xt != inf_coloane.end(); ++xt)
 								{
-									int inceput_valoare_coloana = 0;
-									int final_valoare_coloana = 0;
+									int pozTip1 = xt->find(',', 0);
+									int pozTip2 = xt->find(',', pozTip1 + 1);
+									string tipdata = xt->substr(pozTip1 + 2, pozTip2 - pozTip1 - 2);
+									tipuri.push_back(tipdata);
+								}
 
-									while (inceput_valoare_coloana < element.size() - 2)
+								vector<string> date;
+								while (file_CSV.good())
+								{
+									string element;
+									getline(file_CSV, element, '\n');
+
+									if (element.size() > 0)
 									{
-										int pozindex = 0;
-										for (std::string::size_type index = inceput_valoare_coloana; index < element.size(); ++index)
-										{
-											pozindex = index;
-											if (element[index] == ',')
-											{
-												final_valoare_coloana = index;
-												break;
-											}
-										}
+										int inceput_valoare_coloana = 0;
+										int final_valoare_coloana = 0;
 
-										if (pozindex == element.size() - 1)
+										while (inceput_valoare_coloana < element.size() - 2)
 										{
-											string valoare_coloana = element.substr(inceput_valoare_coloana, final_valoare_coloana - inceput_valoare_coloana);
-											date.push_back(valoare_coloana);
-											break;
-										}
-										else
-										{
-											string valoare_coloana = element.substr(inceput_valoare_coloana, final_valoare_coloana - inceput_valoare_coloana);
-											date.push_back(valoare_coloana);
-
-											inceput_valoare_coloana = final_valoare_coloana + 1;
-										}
-									}
-									if (date.size() == tipuri.size())
-									{
-										int index = 0;
-										while (index < date.size())
-										{
-											if (tipuri[index] == "integer")
+											int pozindex = 0;
+											for (std::string::size_type index = inceput_valoare_coloana; index < element.size(); ++index)
 											{
-												if (!(isInteger(date[index])))
+												pozindex = index;
+												if (element[index] == ',')
 												{
+													final_valoare_coloana = index;
 													break;
 												}
 											}
+
+											if (pozindex == element.size() - 1)
+											{
+												string valoare_coloana = element.substr(inceput_valoare_coloana, final_valoare_coloana - inceput_valoare_coloana);
+												date.push_back(valoare_coloana);
+												break;
+											}
 											else
 											{
-												if (tipuri[index] == "float")
-												{
-													if (!(isFloat(date[index])))
-													{
-														break;
-													}
-												}
-												else
-												{
-													if (tipuri[index] == "text")
-													{
-														if (isInteger(date[index]) || isFloat(date[index]))
-														{
-															break;
-														}
-													}
-												}
+												string valoare_coloana = element.substr(inceput_valoare_coloana, final_valoare_coloana - inceput_valoare_coloana);
+												date.push_back(valoare_coloana);
+
+												inceput_valoare_coloana = final_valoare_coloana + 1;
 											}
-											++index;
 										}
-										if (index < date.size() - 1)
-										{
-											cout << "Nu se respecta structura tabelului" << endl;
-											break;
-										}
-										else
-										{
-											it->second.insert(date);
-											date.clear();
-										}
+
+										VerificareDate vf(tipuri, date, it->second);
+										it->second = vf.verificare();
+										date.clear();
 									}
-									else
-									{
-										break;
-									}
+
 								}
-
+								file_CSV.close();
 							}
-							file_CSV.close();
-
+							else
+							{
+								cout << "Fisierul nu exista!" << endl;
+							}
 						}
+
 					}
 					else
 					{

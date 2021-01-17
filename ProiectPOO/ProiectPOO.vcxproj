@@ -145,6 +145,8 @@
   <ItemGroup>
     <ClInclude Include="BazaDeDate.h" />
     <ClInclude Include="CREATEandINSERT.h" />
+    <ClInclude Include="ScriereBinara.h" />
+    <ClInclude Include="VerificareDate.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

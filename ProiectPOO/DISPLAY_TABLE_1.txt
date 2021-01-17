@@ -1,0 +1,5 @@
+id || nume || prenume || 
+ 1 ||  Mihai ||  Florin || 
+ 2 || Mihai || Marin || 
+ 3 || Pop || Gigi || 
+ 4 || Harlea || Andrei || 
